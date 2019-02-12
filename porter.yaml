@@ -1,0 +1,60 @@
+# This is the configuration for Porter
+# You must define steps for each action, but the rest is optional
+# Uncomment out the sections below to take full advantage of what Porter can do!
+
+mixins:
+  - exec
+
+name: WSLDISTRO
+version: 0.1.0
+description: "Build WSL distros from Docker containers"
+invocationImage: wsl-distro:latest
+
+install:
+  - description: "Export the Docker container to TAR file"
+    exec:
+      command: "/mnt/c/Program Files/Docker/Docker/Resources/bin/docker.exe"
+      arguments:
+        - export
+        - --output 
+        - ./alpine.tar
+        - alpine
+
+  - description: "Install a new WSL distro"
+    exec:
+      command: /mnt/c/WINDOWS/system32/wsl.exe
+      arguments:
+        - --import
+        - "wslcustom"
+        - "./wslcustom"
+        - "./alpine.tar"
+
+uninstall:
+  - description: "Uninstall a WSL distro"
+    exec:
+      command: /mnt/c/WINDOWS/system32/wsl.exe
+      arguments:
+        - --unregister
+        - "wslcustom"
+
+parameters:
+  - name: distro_name
+    type: string
+    default: wslcustom
+
+  - name: distro_path
+    type: string
+    default: "/mnt/c/github/wslcustom"
+
+  - name: distro_source
+    type: string
+    default: "/mnt/c/github/ubuntu1904.tar"
+
+#dependencies:
+#  - name: mysql
+#    parameters:
+#      database-name: wordpress
+
+#credentials:
+#  - name: kubeconfig
+#    path: /root/.kube/config
