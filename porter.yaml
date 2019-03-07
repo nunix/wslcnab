@@ -6,54 +6,90 @@ mixins:
   - exec
 
 name: WSLDISTRO
-version: 0.1.0
+version: 0.3.0
 description: "Build WSL distros from Docker containers"
-invocationImage: wsl-distro:latest
+invocationImage: nunix/wsldistro:latest
+
+#dependencies:
+#  - name: wslbuilder
+#    parameters:
+#      IMAGE_NAME: alpine
+#      IMAGE_VERSION: latest
+
+parameters:
+  - name: DISTRO_IMAGE
+    type: string
+    default: "alpine"
+  
+  - name: DISTRO_NAME
+    type: string
+    default: "wslcnab"
+
+  - name: DISTRO_PATH
+    type: string
+    default: "/github/wslcustom"
+
+  - name: DISTRO_SOURCE
+    type: string
+    default: "/github/wslcustom.tar"
+
+  - name: DOCKER_SOURCE
+    type: string
+    default: "/usr/local/docker/docker"
+
+  - name: WSL_SOURCE
+    type: string
+    default: "/mnt/c/Windows/System32/wsl.exe"
 
 install:
-  - description: "Export the Docker container to TAR file"
-    exec:
-      command: "/mnt/c/Program Files/Docker/Docker/Resources/bin/docker.exe"
+  - exec:
+      description: "===PORTER DEP=== Creates a container based on the image"
+      command: 
+        source: bundle.parameters.DOCKER_SOURCE
+      arguments:
+        - run
+        - -d
+        - --name
+        - source: bundle.parameters.DISTRO_NAME
+        - source: bundle.parameters.DISTRO_IMAGE
+
+  - exec:
+      description: "===PORTER MAIN=== Export the Docker container to TAR file"
+      command: 
+        source: bundle.parameters.DOCKER_SOURCE
       arguments:
         - export
         - --output 
-        - ./alpine.tar
-        - alpine
+        - source: bundle.parameters.DISTRO_SOURCE
+        - source: bundle.parameters.DISTRO_NAME
 
-  - description: "Install a new WSL distro"
-    exec:
-      command: /mnt/c/WINDOWS/system32/wsl.exe
+  - exec:
+      description: "===PORTER MAIN=== Install a new WSL distro"
+      command: 
+        source: bundle.parameters.WSL_SOURCE
       arguments:
         - --import
-        - "wslcustom"
-        - "./wslcustom"
-        - "./alpine.tar"
+        - source: bundle.parameters.DISTRO_NAME
+        - source: bundle.parameters.DISTRO_PATH
+        - source: bundle.parameters.DISTRO_SOURCE
 
 uninstall:
-  - description: "Uninstall a WSL distro"
-    exec:
-      command: /mnt/c/WINDOWS/system32/wsl.exe
+  - exec:
+      description: "===PORTER MAIN=== Uninstall a WSL distro"
+      command: 
+        source: bundle.parameters.WSL_SOURCE
       arguments:
         - --unregister
-        - "wslcustom"
+        - source: bundle.parameters.DISTRO_NAME
 
-parameters:
-  - name: distro_name
-    type: string
-    default: wslcustom
-
-  - name: distro_path
-    type: string
-    default: "/mnt/c/github/wslcustom"
-
-  - name: distro_source
-    type: string
-    default: "/mnt/c/github/ubuntu1904.tar"
-
-#dependencies:
-#  - name: mysql
-#    parameters:
-#      database-name: wordpress
+  - exec:
+      description: "===PORTER DEP=== Removes the builder container"
+      command:
+        source: bundle.parameters.DOCKER_SOURCE
+      arguments:
+        - rm
+        - -f
+        - source: bundle.parameters.DISTRO_NAME
 
 #credentials:
 #  - name: kubeconfig
