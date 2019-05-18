@@ -6,15 +6,9 @@ mixins:
   - exec
 
 name: WSLDISTRO
-version: 0.3.0
+version: 0.7.0
 description: "Build WSL distros from Docker containers"
 invocationImage: nunix/wsldistro:latest
-
-#dependencies:
-#  - name: wslbuilder
-#    parameters:
-#      IMAGE_NAME: alpine
-#      IMAGE_VERSION: latest
 
 parameters:
   - name: DISTRO_IMAGE
@@ -44,53 +38,45 @@ parameters:
 install:
   - exec:
       description: "===PORTER DEP=== Creates a container based on the image"
-      command: 
-        source: bundle.parameters.DOCKER_SOURCE
+      command: "{{ bundle.parameters.DOCKER_SOURCE }}"
       arguments:
         - run
         - -d
-        - --name
-        - source: bundle.parameters.DISTRO_NAME
-        - source: bundle.parameters.DISTRO_IMAGE
+        - --name 
+        - "{{ bundle.parameters.DISTRO_NAME }}"
+        - "{{ bundle.parameters.DISTRO_IMAGE }}"
+        - /bin/sh
 
   - exec:
       description: "===PORTER MAIN=== Export the Docker container to TAR file"
-      command: 
-        source: bundle.parameters.DOCKER_SOURCE
+      command: "{{ bundle.parameters.DOCKER_SOURCE }}"
       arguments:
         - export
         - --output 
-        - source: bundle.parameters.DISTRO_SOURCE
-        - source: bundle.parameters.DISTRO_NAME
+        - "{{ bundle.parameters.DISTRO_SOURCE }}"
+        - "{{ bundle.parameters.DISTRO_NAME }}"
 
   - exec:
       description: "===PORTER MAIN=== Install a new WSL distro"
-      command: 
-        source: bundle.parameters.WSL_SOURCE
+      command: "{{ bundle.parameters.WSL_SOURCE }}"
       arguments:
-        - --import
-        - source: bundle.parameters.DISTRO_NAME
-        - source: bundle.parameters.DISTRO_PATH
-        - source: bundle.parameters.DISTRO_SOURCE
+        - --import 
+        - "{{ bundle.parameters.DISTRO_NAME }}"
+        - "{{ bundle.parameters.DISTRO_PATH }}"
+        - "{{ bundle.parameters.DISTRO_SOURCE }}"
 
 uninstall:
   - exec:
       description: "===PORTER MAIN=== Uninstall a WSL distro"
-      command: 
-        source: bundle.parameters.WSL_SOURCE
+      command: "{{ bundle.parameters.WSL_SOURCE }}"
       arguments:
-        - --unregister
-        - source: bundle.parameters.DISTRO_NAME
+        - --unregister 
+        - "{{ bundle.parameters.DISTRO_NAME }}"
 
   - exec:
       description: "===PORTER DEP=== Removes the builder container"
-      command:
-        source: bundle.parameters.DOCKER_SOURCE
+      command: "{{ bundle.parameters.DOCKER_SOURCE }}"
       arguments:
         - rm
         - -f
-        - source: bundle.parameters.DISTRO_NAME
-
-#credentials:
-#  - name: kubeconfig
-#    path: /root/.kube/config
+        - "{{ bundle.parameters.DISTRO_NAME }}"
