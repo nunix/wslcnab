@@ -80,3 +80,14 @@ uninstall:
         - rm
         - -f
         - "{{ bundle.parameters.DISTRO_NAME }}"
+
+#region The Corsair will steal 😈
+upgrade:
+  - exec:
+      description: "=== To infinity and beyond ==="
+      command: "{{ bundle.parameters.WSL_SOURCE }}"
+      arguments:
+        - --set-version
+        - "{{ bundle.parameters.DISTRO_NAME }}"
+        - "{{ bundle.parameters.DISTRO_VERSION }}"
+#endregion
