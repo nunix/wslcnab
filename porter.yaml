@@ -89,5 +89,5 @@ upgrade:
       arguments:
         - --set-version
         - "{{ bundle.parameters.DISTRO_NAME }}"
-        - "{{ bundle.parameters.DISTRO_VERSION }}"
+        - 2
 #endregion
